@@ -24,6 +24,7 @@ package recipes_service.tsae.data_structures;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
@@ -64,7 +65,7 @@ public class TimestampVector implements Serializable{
 	 * Updates the timestamp vector with a new timestamp. 
 	 * @param timestamp
 	 */
-	public void updateTimestamp(Timestamp timestamp){
+	public synchronized void updateTimestamp(Timestamp timestamp){
 		LSimLogger.log(Level.TRACE, "Updating the TimestampVectorInserting with the timestamp: "+timestamp);
 
 		if (timestamp != null) {
@@ -76,7 +77,17 @@ public class TimestampVector implements Serializable{
 	 * merge in another vector, taking the elementwise maximum
 	 * @param tsVector (a timestamp vector)
 	 */
-	public void updateMax(TimestampVector tsVector){
+	public synchronized void updateMax(TimestampVector tsVector){
+		for(ConcurrentHashMap.Entry<String,Timestamp> entry : timestampVector.entrySet())
+		{
+			String name=entry.getKey();
+			if(!tsVector.getLast(name).isNullTimestamp())
+			
+				if(getLast(name).isNullTimestamp() || getLast(name).compare(tsVector.getLast(name))<0)
+				{
+					timestampVector.put(name,tsVector.getLast(name));
+				}
+		}
 	}
 	
 	/**
@@ -85,10 +96,10 @@ public class TimestampVector implements Serializable{
 	 * @return the last timestamp issued by node that has been
 	 * received.
 	 */
-	public Timestamp getLast(String node){
+	public synchronized Timestamp getLast(String node){
 		
 		// return generated automatically. Remove it when implementing your solution 
-		return null;
+		return timestampVector.get(node);	
 	}
 	
 	/**
@@ -98,6 +109,14 @@ public class TimestampVector implements Serializable{
 	 *  @param tsVector (timestamp vector)
 	 */
 	public void mergeMin(TimestampVector tsVector){
+		for(ConcurrentHashMap.Entry<String, Timestamp> entry : timestampVector.entrySet())
+		{
+			String pid=entry.getKey();
+			if( getLast(pid).compare(tsVector.getLast(pid))>0)
+			{
+				timestampVector.put(pid, tsVector.getLast(pid));
+			}
+		}
 	}
 	
 	/**
@@ -105,8 +124,9 @@ public class TimestampVector implements Serializable{
 	 */
 	public TimestampVector clone(){
 		
-		// return generated automatically. Remove it when implementing your solution 
-		return null;
+		TimestampVector copy = new TimestampVector(new ArrayList<String>(timestampVector.keySet()));
+		copy.timestampVector.putAll(timestampVector);
+		return copy;
 	}
 	
 	/**
