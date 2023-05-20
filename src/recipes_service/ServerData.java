@@ -269,8 +269,10 @@ public class ServerData {
 			messages = getLog().msgList(pid, summary.getLast(pid));
 
 			for (Operation op : messages) {
+				
 				if (OperationType.ADD == op.getType()) {
 					AddOperation a = (AddOperation) op;
+					
 					if (!tombstones.contains(a.getRecipe().getTimestamp())) {
 						Recipe rcpe = new Recipe(a.getRecipe().getTitle(), a.getRecipe().getRecipe(), pid,
 								a.getTimestamp());

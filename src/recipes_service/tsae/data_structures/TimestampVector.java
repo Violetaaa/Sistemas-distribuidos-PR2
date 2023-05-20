@@ -20,8 +20,6 @@
 
 package recipes_service.tsae.data_structures;
 
-
-
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.ArrayList;
@@ -34,119 +32,118 @@ import edu.uoc.dpcs.lsim.logger.LoggerManager.Level;
 import lsim.library.api.LSimLogger;
 
 /**
- * @author Joan-Manuel Marques
- * December 2012
+ * @author Joan-Manuel Marques December 2012
  *
  */
-public class TimestampVector implements Serializable{
-	// Only for the zip file with the correct solution of phase1.Needed for the logging system for the phase1. sgeag_2018p 
+public class TimestampVector implements Serializable {
+	// Only for the zip file with the correct solution of phase1.Needed for the
+	// logging system for the phase1. sgeag_2018p
 //	private transient LSimCoordinator lsim = LSimFactory.getCoordinatorInstance();
 	// Needed for the logging system sgeag@2017
 //	private transient LSimWorker lsim = LSimFactory.getWorkerInstance();
-	
+
 	private static final long serialVersionUID = -765026247959198886L;
 	/**
-	 * This class stores a summary of the timestamps seen by a node.
-	 * For each node, stores the timestamp of the last received operation.
+	 * This class stores a summary of the timestamps seen by a node. For each node,
+	 * stores the timestamp of the last received operation.
 	 */
-	
-	private ConcurrentHashMap<String, Timestamp> timestampVector= new ConcurrentHashMap<String, Timestamp>();
-	
-	public TimestampVector (List<String> participants){
+
+	private ConcurrentHashMap<String, Timestamp> timestampVector = new ConcurrentHashMap<String, Timestamp>();
+
+	public TimestampVector(List<String> participants) {
 		// create and empty TimestampVector
-		for (Iterator<String> it = participants.iterator(); it.hasNext(); ){
+		for (Iterator<String> it = participants.iterator(); it.hasNext();) {
 			String id = it.next();
-			// when sequence number of timestamp < 0 it means that the timestamp is the null timestamp
+			// when sequence number of timestamp < 0 it means that the timestamp is the null
+			// timestamp
 			timestampVector.put(id, new Timestamp(id, Timestamp.NULL_TIMESTAMP_SEQ_NUMBER));
 		}
 	}
 
 	/**
-	 * Updates the timestamp vector with a new timestamp. 
+	 * Updates the timestamp vector with a new timestamp.
+	 * 
 	 * @param timestamp
 	 */
-	public synchronized void updateTimestamp(Timestamp timestamp){
-		LSimLogger.log(Level.TRACE, "Updating the TimestampVectorInserting with the timestamp: "+timestamp);
+	public synchronized void updateTimestamp(Timestamp timestamp) {
+		LSimLogger.log(Level.TRACE, "Updating the TimestampVectorInserting with the timestamp: " + timestamp);
 
 		if (timestamp != null) {
 			this.timestampVector.replace(timestamp.getHostid(), timestamp);
 		}
 	}
-	
+
 	/**
 	 * merge in another vector, taking the elementwise maximum
+	 * 
 	 * @param tsVector (a timestamp vector)
 	 */
-	public synchronized void updateMax(TimestampVector tsVector){
-		for(ConcurrentHashMap.Entry<String,Timestamp> entry : timestampVector.entrySet())
-		{
-			String name=entry.getKey();
-			if(!tsVector.getLast(name).isNullTimestamp())
-			
-				if(getLast(name).isNullTimestamp() || getLast(name).compare(tsVector.getLast(name))<0)
-				{
-					timestampVector.put(name,tsVector.getLast(name));
+	public synchronized void updateMax(TimestampVector tsVector) {
+		for (ConcurrentHashMap.Entry<String, Timestamp> entry : timestampVector.entrySet()) {
+			String name = entry.getKey();
+			if (!tsVector.getLast(name).isNullTimestamp())
+
+				if (getLast(name).isNullTimestamp() || getLast(name).compare(tsVector.getLast(name)) < 0) {
+					timestampVector.put(name, tsVector.getLast(name));
 				}
 		}
 	}
-	
+
 	/**
 	 * 
 	 * @param node
-	 * @return the last timestamp issued by node that has been
-	 * received.
+	 * @return the last timestamp issued by node that has been received.
 	 */
-	public synchronized Timestamp getLast(String node){
-		
-		// return generated automatically. Remove it when implementing your solution 
-		return timestampVector.get(node);	
+	public synchronized Timestamp getLast(String node) {
+
+		// return generated automatically. Remove it when implementing your solution
+		return timestampVector.get(node);
 	}
-	
+
 	/**
-	 * merges local timestamp vector with tsVector timestamp vector taking
-	 * the smallest timestamp for each node.
-	 * After merging, local node will have the smallest timestamp for each node.
-	 *  @param tsVector (timestamp vector)
+	 * merges local timestamp vector with tsVector timestamp vector taking the
+	 * smallest timestamp for each node. After merging, local node will have the
+	 * smallest timestamp for each node.
+	 * 
+	 * @param tsVector (timestamp vector)
 	 */
-	public void mergeMin(TimestampVector tsVector){
-		for(ConcurrentHashMap.Entry<String, Timestamp> entry : timestampVector.entrySet())
-		{
-			String pid=entry.getKey();
-			if( getLast(pid).compare(tsVector.getLast(pid))>0)
-			{
+	public void mergeMin(TimestampVector tsVector) {
+		for (ConcurrentHashMap.Entry<String, Timestamp> entry : timestampVector.entrySet()) {
+			String pid = entry.getKey();
+			if (getLast(pid).compare(tsVector.getLast(pid)) > 0) {
 				timestampVector.put(pid, tsVector.getLast(pid));
 			}
 		}
 	}
-	
+
 	/**
 	 * clone
 	 */
-	public TimestampVector clone(){
-		
+	public TimestampVector clone() {
+
 		TimestampVector copy = new TimestampVector(new ArrayList<String>(timestampVector.keySet()));
 		copy.timestampVector.putAll(timestampVector);
 		return copy;
 	}
-	
+
 	/**
 	 * equals
 	 */
-	public boolean equals(Object obj){
-					
+	public boolean equals(Object obj) {
+
 		if (this == obj) {
 			return true;
 		} else if (obj == null || getClass() != obj.getClass()) {
 			return false;
 		}
-			
+
 		TimestampVector other = (TimestampVector) obj;
-		
+
 		if (!other.timestampVector.equals(this.timestampVector)) {
-        	return false;
-        } else {
-            return this.timestampVector.equals(other.timestampVector);
-        }  
+			return false;
+		} else {
+			return this.timestampVector.equals(other.timestampVector);
+		}
 	}
 
 	/**
@@ -154,14 +151,14 @@ public class TimestampVector implements Serializable{
 	 */
 	@Override
 	public synchronized String toString() {
-		String all="";
-		if(timestampVector==null){
+		String all = "";
+		if (timestampVector == null) {
 			return all;
 		}
-		for(Enumeration<String> en=timestampVector.keys(); en.hasMoreElements();){
-			String name=en.nextElement();
-			if(timestampVector.get(name)!=null)
-				all+=timestampVector.get(name)+"\n";
+		for (Enumeration<String> en = timestampVector.keys(); en.hasMoreElements();) {
+			String name = en.nextElement();
+			if (timestampVector.get(name) != null)
+				all += timestampVector.get(name) + "\n";
 		}
 		return all;
 	}

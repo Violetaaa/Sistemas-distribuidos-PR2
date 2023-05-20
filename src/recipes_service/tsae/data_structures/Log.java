@@ -69,18 +69,16 @@ public class Log implements Serializable {
 	 * @return true if op is inserted, false otherwise.
 	 */
 	public synchronized boolean add(Operation op) {
-		// ....
-		String host = op.getTimestamp().getHostid();
-		List<Operation> operations = this.log.get(host);
 
-		if (operations.isEmpty()
-				|| operations.get(operations.size() - 1).getTimestamp().compare(op.getTimestamp()) < 0) {
+		String host = op.getTimestamp().getHostid();
+		List<Operation> operations = log.get(host);
+
+		if (operations.isEmpty() || operations.get(operations.size() - 1).getTimestamp().compare(op.getTimestamp()) < 0) {
 			operations.add(op);
 			log.put(host, operations);
 			return true;
 		}
 
-		// return generated automatically. Remove it when implementing your solution
 		return false;
 	}
 
@@ -94,27 +92,31 @@ public class Log implements Serializable {
 	 */
 	public synchronized List<Operation> listNewer(TimestampVector sum) {
 
-		// return generated automatically. Remove it when implementing your solution
-		List<Operation> newerList = new Vector<Operation>();
+		List<Operation> newerOperations = new Vector<Operation>();
 
 		for (ConcurrentHashMap.Entry<String, List<Operation>> entry : log.entrySet()) {
+
 			String hostId = entry.getKey();
-			List<Operation> messages = entry.getValue();
-			if (!messages.isEmpty()) {
-				Timestamp last = messages.get(messages.size() - 1).getTimestamp();
-				if (last.compare(sum.getLast(hostId)) > 0) {
+			List<Operation> operations = entry.getValue();
+
+			if (!operations.isEmpty()) {
+
+				Timestamp lastTimestamp = operations.get(operations.size() - 1).getTimestamp();
+				if (lastTimestamp.compare(sum.getLast(hostId)) > 0) {
+
 					if (sum.getLast(hostId).isNullTimestamp()) {
-						newerList.addAll(messages);
+						newerOperations.addAll(operations);
 					} else {
-						for (Operation op : messages) {
-							if (op.getTimestamp().compare(sum.getLast(hostId)) > 0)
-								newerList.add(op);
+						for (Operation op : operations) {
+							if (op.getTimestamp().compare(sum.getLast(hostId)) > 0) {
+								newerOperations.add(op);
+							}
 						}
 					}
 				}
 			}
 		}
-		return newerList;
+		return newerOperations;
 	}
 
 	/**
