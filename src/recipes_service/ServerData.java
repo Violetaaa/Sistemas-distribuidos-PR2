@@ -262,22 +262,20 @@ public class ServerData {
 	}
 
 	public synchronized void deliverMessages(TimestampVector summary) {
-		List<String> group = participants.getIds();
+		
+		List<String> hostsIds = participants.getIds();
 		List<Operation> messages;
 
-		for (String pid : group) {
-			messages = getLog().msgList(pid, summary.getLast(pid));
+		for (String id : hostsIds) {
+			messages = getLog().msgList(id, summary.getLast(id));
 
-			for (Operation op : messages) {
+			for (Operation o : messages) {
 				
-				if (OperationType.ADD == op.getType()) {
-					AddOperation a = (AddOperation) op;
+				if (OperationType.ADD == o.getType()) {
 					
-					if (!tombstones.contains(a.getRecipe().getTimestamp())) {
-						Recipe rcpe = new Recipe(a.getRecipe().getTitle(), a.getRecipe().getRecipe(), pid,
-								a.getTimestamp());
-						recipes.add(rcpe);
-					}
+					AddOperation operation = (AddOperation) o;
+					Recipe recipe = new Recipe(operation.getRecipe().getTitle(), operation.getRecipe().getRecipe(), id, operation.getTimestamp());
+					recipes.add(recipe);
 				}
 			}
 		}

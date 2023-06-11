@@ -140,7 +140,7 @@ public class TSAESessionOriginatorSide extends TimerTask {
 
 				// send operations
 				for (ListIterator<Operation> en = messages.listIterator(); en.hasNext();) {
-					// ...
+					
 					Operation operation = en.next();
 					msg = new MessageOperation(operation);
 					msg.setSessionNumber(current_session_number);
